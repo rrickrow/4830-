@@ -11,13 +11,23 @@
   <script src="static/js/fallback-data.js"></script>
 
   <style>
+    /* ========== Chinese Font — bundled locally (WenQuanYi Micro Hei, SIL OFL) ========== */
+    @font-face {
+      font-family: "WQY";
+      src: url("static/fonts/wqy-microhei.woff2") format("woff2"),
+           url("static/fonts/wqy-microhei.woff")  format("woff");
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
     /* ========== Reset & Base ========== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { font-size: 14px; scroll-behavior: smooth; }
     body {
       background: #0a0f1e;
       color: #c8d8f8;
-      font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+      font-family: "WQY", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
       min-height: 100vh;
     }
 

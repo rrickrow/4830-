@@ -88,12 +88,18 @@ const THEME = {
 
 const BASE_OPTS = {
   backgroundColor: THEME.bg,
-  textStyle: { color: THEME.textColor, fontFamily: "'PingFang SC','Microsoft YaHei',sans-serif" },
+  textStyle: {
+    color: THEME.textColor,
+    fontFamily: "'WQY','PingFang SC','Microsoft YaHei',sans-serif",
+  },
   grid: { top: 40, right: 20, bottom: 40, left: 60, containLabel: true },
   tooltip: {
     backgroundColor: "#0d1b3e",
     borderColor: "#1a3060",
-    textStyle: { color: "#c8d8f8" },
+    textStyle: {
+      color: "#c8d8f8",
+      fontFamily: "'WQY','PingFang SC','Microsoft YaHei',sans-serif",
+    },
   },
   axisPointer: { lineStyle: { color: "#1e5090" } },
 };
