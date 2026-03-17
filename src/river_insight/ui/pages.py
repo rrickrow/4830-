@@ -328,6 +328,7 @@ def _render_vegetation_tab(fvc_stats: pd.DataFrame, artifact_map: dict[str, Path
         _show_image(artifact_map.get("fvc_heatmap_png"), "FVC 热力图")
     with col_right:
         _show_image(artifact_map.get("coupling_png"), "河道-植被耦合散点图")
+    _show_image(artifact_map.get("response_summary_png"), "植被响应区综合分析")
     st.subheader("缓冲带统计")
     st.dataframe(fvc_stats, use_container_width=True, hide_index=True)
 
@@ -341,13 +342,25 @@ def _render_driver_tab(
     with col_left:
         _show_image(artifact_map.get("regression_png"), "回归系数图")
     with col_right:
-        st.metric("回归样本数", regression_summary.get("sample_count"))
-        st.write(f"R²: {regression_summary.get('r_squared')}")
-        st.write(f"调整后 R²: {regression_summary.get('adjusted_r_squared')}")
-    for key in ("regression_coefficients_csv", "driver_contributions_csv", "correlation_matrix_csv"):
+        r2 = regression_summary.get("r_squared")
+        adj_r2 = regression_summary.get("adjusted_r_squared")
+        n = regression_summary.get("sample_count")
+        st.metric("回归样本数", n)
+        if r2 is not None:
+            st.metric("R²", f"{r2:.4f}")
+            st.metric("调整后 R²", f"{adj_r2:.4f}")
+        else:
+            st.write(f"R²: {r2}")
+            st.write(f"调整后 R²: {adj_r2}")
+    _show_image(artifact_map.get("annual_metrics_png"), "水文指标年际变化")
+    for key, label in [
+        ("regression_coefficients_csv", "回归系数"),
+        ("driver_contributions_csv", "驱动因子贡献度"),
+        ("correlation_matrix_csv", "相关系数矩阵"),
+    ]:
         table = _read_csv(artifact_map.get(key))
         if not table.empty:
-            st.subheader(key)
+            st.subheader(label)
             st.dataframe(table, use_container_width=True, hide_index=True)
     if not segment_metrics.empty:
         st.subheader("河道分段指标")
@@ -355,7 +368,11 @@ def _render_driver_tab(
 
 
 def _render_quality_tab(quality_report: dict[str, object], artifact_map: dict[str, Path]) -> None:
-    _show_image(artifact_map.get("ndvi_quality_png"), "NDVI 质量曲线")
+    col_left, col_right = st.columns(2)
+    with col_left:
+        _show_image(artifact_map.get("ndvi_quality_png"), "NDVI 质量曲线")
+    with col_right:
+        _show_image(artifact_map.get("precipitation_trend_png"), "降水量变化趋势")
     st.subheader("质量报告")
     st.write(quality_report.get("summary", "无"))
     issues = quality_report.get("issues", [])
