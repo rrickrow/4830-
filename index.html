@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>中国发展数据可视化平台</title>
+  <title>松辽流域河道变迁与植被响应遥感分析平台</title>
 
   <!-- ECharts 5 (Apache, open-source) — bundled locally -->
   <script src="static/js/echarts.min.js"></script>
-  <!-- Fallback data (real World Bank historical values, used when API is unreachable) -->
+  <!-- 松辽流域遥感分析离线数据 -->
   <script src="static/js/fallback-data.js"></script>
 
   <style>
@@ -25,7 +25,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { font-size: 14px; scroll-behavior: smooth; }
     body {
-      background: #0a0f1e;
+      background: #050d1a;
       color: #c8d8f8;
       font-family: "WQY", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
       min-height: 100vh;
@@ -33,17 +33,17 @@
 
     /* ========== Header ========== */
     header {
-      background: linear-gradient(135deg, #0d1b3e 0%, #102040 100%);
-      border-bottom: 1px solid #1a3060;
+      background: linear-gradient(135deg, #071428 0%, #0a1e38 100%);
+      border-bottom: 1px solid #0f2548;
       padding: 0 2rem;
-      height: 64px;
+      height: 68px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 2px 20px rgba(0,120,255,0.2);
+      box-shadow: 0 2px 24px rgba(0,180,120,0.15);
     }
     .header-title {
       display: flex;
@@ -51,67 +51,81 @@
       gap: 12px;
     }
     .header-title .logo {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, #1e90ff, #00d4ff);
-      border-radius: 8px;
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #1abc9c, #1e90ff);
+      border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
       font-size: 18px; font-weight: bold; color: #fff;
+      flex-shrink: 0;
     }
+    .header-title .title-block { display: flex; flex-direction: column; }
     .header-title h1 {
-      font-size: 1.3rem; font-weight: 700;
-      background: linear-gradient(90deg, #5ab4ff, #00d4ff);
+      font-size: 1.15rem; font-weight: 700; line-height: 1.3;
+      background: linear-gradient(90deg, #36d68c, #1e90ff);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .header-meta {
-      display: flex; align-items: center; gap: 16px; font-size: 0.82rem; color: #6890c8;
+    .header-title .subtitle {
+      font-size: 0.72rem; color: #4a8878; margin-top: 1px;
     }
-    #data-timestamp { color: #5ab4ff; }
+    .header-meta {
+      display: flex; align-items: center; gap: 16px;
+      font-size: 0.8rem; color: #4a7080;
+    }
+    #data-timestamp { color: #36d68c; }
     #loading-badge {
       padding: 3px 10px; border-radius: 12px;
-      background: rgba(30,144,255,0.15); border: 1px solid #1e90ff;
-      color: #1e90ff; font-size: 0.75rem; display: none;
+      background: rgba(26,188,156,0.12); border: 1px solid #1abc9c;
+      color: #1abc9c; font-size: 0.75rem; display: none;
     }
     #loading-badge.visible { display: inline-block; }
 
     /* ========== KPI Row ========== */
     .kpi-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
       gap: 16px;
       padding: 20px 2rem 0;
     }
     .kpi-card {
-      background: linear-gradient(135deg, #0d1b3e 0%, #112045 100%);
-      border: 1px solid #1a3060;
+      background: linear-gradient(135deg, #071428 0%, #091c35 100%);
+      border: 1px solid #0f2548;
       border-radius: 12px;
       padding: 16px 20px;
       position: relative; overflow: hidden;
       transition: transform .2s, box-shadow .2s;
     }
-    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,120,255,0.2); }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,180,100,0.15); }
     .kpi-card::before {
       content: "";
       position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: var(--accent, #1e90ff);
+      background: var(--accent, #1abc9c);
       border-radius: 12px 12px 0 0;
     }
-    .kpi-label { font-size: 0.78rem; color: #6890c8; margin-bottom: 6px; }
-    .kpi-value { font-size: 1.6rem; font-weight: 700; color: #e0f0ff; letter-spacing: 0.5px; }
-    .kpi-sub { font-size: 0.73rem; margin-top: 4px; }
-    .kpi-up { color: #36d68c; } .kpi-down { color: #ff5e5e; }
+    .kpi-label { font-size: 0.78rem; color: #3a6870; margin-bottom: 6px; }
+    .kpi-value { font-size: 1.55rem; font-weight: 700; color: #e0f4f0; letter-spacing: 0.5px; }
+    .kpi-sub { font-size: 0.72rem; margin-top: 4px; }
+    .kpi-up   { color: #36d68c; }
+    .kpi-down { color: #ff7055; }
+
+    /* ========== Section label ========== */
+    .section-label {
+      padding: 18px 2rem 0;
+      font-size: 0.78rem; color: #2a5060;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
 
     /* ========== Main Grid ========== */
     .main-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
-      padding: 20px 2rem;
+      padding: 16px 2rem;
     }
     @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
 
     .chart-card {
-      background: linear-gradient(135deg, #0d1b3e 0%, #112045 100%);
-      border: 1px solid #1a3060;
+      background: linear-gradient(135deg, #071428 0%, #091c35 100%);
+      border: 1px solid #0f2548;
       border-radius: 12px;
       padding: 16px;
       min-height: 340px;
@@ -122,37 +136,41 @@
       margin-bottom: 12px;
     }
     .card-title {
-      font-size: 0.95rem; font-weight: 600; color: #c8d8f8;
+      font-size: 0.93rem; font-weight: 600; color: #c8e8e0;
       display: flex; align-items: center; gap: 8px;
     }
     .card-title::before {
       content: ""; width: 4px; height: 16px;
-      background: var(--accent, #1e90ff);
+      background: var(--accent, #1abc9c);
       border-radius: 2px; display: inline-block;
     }
-    .card-subtitle { font-size: 0.72rem; color: #4a70a8; }
+    .card-subtitle { font-size: 0.72rem; color: #2a5060; }
     .chart { width: 100%; height: 280px; }
-    .chart.tall { height: 380px; }
+    .chart.tall { height: 360px; }
 
     /* ========== Footer ========== */
     footer {
-      text-align: center; padding: 24px;
-      color: #3a5080; font-size: 0.75rem;
-      border-top: 1px solid #0f1e3a;
-      margin-top: 16px;
+      text-align: center; padding: 28px;
+      color: #2a4a60; font-size: 0.73rem;
+      border-top: 1px solid #0a1e30;
+      margin-top: 12px;
+      line-height: 1.8;
     }
-    footer a { color: #1e90ff; text-decoration: none; }
+    footer a { color: #1abc9c; text-decoration: none; }
 
     /* ========== Loading Skeleton ========== */
-    .skeleton { background: linear-gradient(90deg, #0f1e40 25%, #162848 50%, #0f1e40 75%);
-      background-size: 200% 100%; animation: shimmer 1.5s infinite;
-      border-radius: 6px; min-height: 260px; }
+    .skeleton {
+      background: linear-gradient(90deg, #071428 25%, #0c1e38 50%, #071428 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px; min-height: 260px;
+    }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-    /* ========== Data Source Tag ========== */
+    /* ========== Source Tag ========== */
     .source-tag {
-      font-size: 0.68rem; color: #2a4870;
-      padding: 2px 8px; border: 1px solid #1a3060; border-radius: 10px;
+      font-size: 0.67rem; color: #1e4050;
+      padding: 2px 8px; border: 1px solid #0f2540; border-radius: 10px;
     }
   </style>
 </head>
@@ -161,118 +179,136 @@
 <!-- ========== HEADER ========== -->
 <header>
   <div class="header-title">
-    <div class="logo">数</div>
-    <h1>中国发展数据可视化平台</h1>
+    <div class="logo">遥</div>
+    <div class="title-block">
+      <h1>松辽流域河道变迁与植被响应遥感分析平台</h1>
+      <span class="subtitle">从遥感视角揭示过去三十年松辽流域河道变迁及其对周围植被的影响</span>
+    </div>
   </div>
   <div class="header-meta">
     <span id="loading-badge" class="visible">⟳ 加载数据…</span>
-    <span>数据更新：<span id="data-timestamp">—</span></span>
-    <span>数据来源：World Bank Open Data</span>
+    <span>更新时间：<span id="data-timestamp">—</span></span>
+    <span>数据：Landsat · MODIS · CHIRPS</span>
   </div>
 </header>
 
 <!-- ========== KPI ROW ========== -->
 <div class="kpi-row">
   <div class="kpi-card" style="--accent:#1e90ff">
-    <div class="kpi-label">中国 GDP（2022）</div>
-    <div class="kpi-value" id="kpi-gdp">加载中…</div>
-    <div class="kpi-sub kpi-up" id="kpi-gdp-growth">▲ —</div>
+    <div class="kpi-label">松花江主河道宽度（2022）</div>
+    <div class="kpi-value" id="kpi-songhua-width">加载中…</div>
+    <div class="kpi-sub kpi-down" id="kpi-songhua-width-sub">—</div>
   </div>
   <div class="kpi-card" style="--accent:#00d4ff">
-    <div class="kpi-label">总人口（2022）</div>
-    <div class="kpi-value" id="kpi-pop">加载中…</div>
-    <div class="kpi-sub kpi-up" id="kpi-pop-growth">▲ —</div>
+    <div class="kpi-label">辽河主河道宽度（2022）</div>
+    <div class="kpi-value" id="kpi-liao-width">加载中…</div>
+    <div class="kpi-sub kpi-down" id="kpi-liao-width-sub">—</div>
   </div>
   <div class="kpi-card" style="--accent:#36d68c">
-    <div class="kpi-label">GDP 增速（2022）</div>
-    <div class="kpi-value" id="kpi-gdp-rate">加载中…</div>
-    <div class="kpi-sub" style="color:#6890c8">年均同比增长率</div>
+    <div class="kpi-label">松花江河岸带 NDVI（2022）</div>
+    <div class="kpi-value" id="kpi-ndvi">加载中…</div>
+    <div class="kpi-sub kpi-up" id="kpi-ndvi-sub">—</div>
   </div>
   <div class="kpi-card" style="--accent:#f5a623">
-    <div class="kpi-label">人均 GDP（2022）</div>
-    <div class="kpi-value" id="kpi-gdp-pc">加载中…</div>
-    <div class="kpi-sub kpi-up" id="kpi-gdp-pc-growth">▲ —</div>
+    <div class="kpi-label">流域地表水体面积（2022）</div>
+    <div class="kpi-value" id="kpi-water-area">加载中…</div>
+    <div class="kpi-sub kpi-down" id="kpi-water-area-sub">—</div>
   </div>
-  <div class="kpi-card" style="--accent:#ff5e5e">
-    <div class="kpi-label">城镇化率（2022）</div>
-    <div class="kpi-value" id="kpi-urban">加载中…</div>
-    <div class="kpi-sub kpi-up" id="kpi-urban-growth">▲ —</div>
+  <div class="kpi-card" style="--accent:#ff7055">
+    <div class="kpi-label">松花江累计河道迁移距离</div>
+    <div class="kpi-value" id="kpi-migration">加载中…</div>
+    <div class="kpi-sub" id="kpi-migration-sub" style="color:#4a8878">—</div>
   </div>
 </div>
 
 <!-- ========== CHARTS ========== -->
+<div class="section-label">河道形态变化</div>
 <div class="main-grid">
 
-  <!-- GDP Trend -->
+  <!-- 图表 1：松花江 & 辽河河道宽度趋势 -->
   <div class="chart-card wide" style="--accent:#1e90ff">
     <div class="card-header">
-      <span class="card-title" style="--accent:#1e90ff">中国 GDP 总量趋势（1990–2022）</span>
-      <span class="source-tag">世界银行 NY.GDP.MKTP.CD</span>
+      <span class="card-title" style="--accent:#1e90ff">松花江 / 辽河主河道宽度趋势（1990–2022）</span>
+      <span class="source-tag">Landsat TM/ETM+/OLI 30 m 遥感提取</span>
     </div>
-    <div id="gdpChart" class="chart tall skeleton"></div>
+    <div id="channelWidthChart" class="chart tall skeleton"></div>
   </div>
 
-  <!-- GDP Growth Rate -->
-  <div class="chart-card" style="--accent:#36d68c">
-    <div class="card-header">
-      <span class="card-title" style="--accent:#36d68c">GDP 年增长率（%）</span>
-      <span class="source-tag">世界银行 NY.GDP.MKTP.KD.ZG</span>
-    </div>
-    <div id="gdpGrowthChart" class="chart skeleton"></div>
-  </div>
-
-  <!-- Population -->
+  <!-- 图表 2：水体面积 -->
   <div class="chart-card" style="--accent:#00d4ff">
     <div class="card-header">
-      <span class="card-title" style="--accent:#00d4ff">中国人口总量与城镇化率</span>
-      <span class="source-tag">世界银行 SP.POP.TOTL / SP.URB.TOTL.IN.ZS</span>
+      <span class="card-title" style="--accent:#00d4ff">流域地表水体面积变化（km²）</span>
+      <span class="source-tag">Landsat JRC Global Surface Water</span>
     </div>
-    <div id="popChart" class="chart skeleton"></div>
+    <div id="waterAreaChart" class="chart skeleton"></div>
   </div>
 
-  <!-- International Comparison -->
-  <div class="chart-card wide" style="--accent:#f5a623">
+  <!-- 图表 4：河道迁移距离 -->
+  <div class="chart-card" style="--accent:#f5a623">
     <div class="card-header">
-      <span class="card-title" style="--accent:#f5a623">主要经济体 GDP 对比（2022，万亿美元）</span>
-      <span class="source-tag">世界银行 NY.GDP.MKTP.CD</span>
+      <span class="card-title" style="--accent:#f5a623">松花江河道中心线累计迁移距离（m）</span>
+      <span class="source-tag">Landsat 多期影像河道中心线提取</span>
     </div>
-    <div id="compareChart" class="chart skeleton"></div>
+    <div id="migrationChart" class="chart skeleton"></div>
   </div>
 
-  <!-- Per Capita GDP -->
-  <div class="chart-card" style="--accent:#ff5e5e">
+</div>
+
+<div class="section-label">植被响应分析</div>
+<div class="main-grid">
+
+  <!-- 图表 3：NDVI 趋势 -->
+  <div class="chart-card wide" style="--accent:#36d68c">
     <div class="card-header">
-      <span class="card-title" style="--accent:#ff5e5e">人均 GDP 趋势（美元）</span>
-      <span class="source-tag">世界银行 NY.GDP.PCAP.CD</span>
+      <span class="card-title" style="--accent:#36d68c">河岸缓冲带（5 km）NDVI 时间序列（1990–2022）</span>
+      <span class="source-tag">MODIS MOD13Q1 250 m 生长季均值（5–9 月）</span>
     </div>
-    <div id="gdpPcChart" class="chart skeleton"></div>
+    <div id="ndviChart" class="chart tall skeleton"></div>
   </div>
 
-  <!-- Trade -->
+  <!-- 图表 6：宽度 vs NDVI 散点相关 -->
   <div class="chart-card" style="--accent:#9b59b6">
     <div class="card-header">
-      <span class="card-title" style="--accent:#9b59b6">贸易总额（出口 + 进口，十亿美元）</span>
-      <span class="source-tag">世界银行 NE.EXP/IMP.GNFS.CD</span>
+      <span class="card-title" style="--accent:#9b59b6">松花江河道宽度 ↔ 河岸 NDVI 相关散点图</span>
+      <span class="source-tag">Landsat × MODIS 联合分析</span>
     </div>
-    <div id="tradeChart" class="chart skeleton"></div>
+    <div id="scatterChart" class="chart skeleton"></div>
   </div>
 
-  <!-- CO2 Emissions -->
-  <div class="chart-card wide" style="--accent:#e74c3c">
+  <!-- 图表 7：土地利用变化 -->
+  <div class="chart-card" style="--accent:#1abc9c">
     <div class="card-header">
-      <span class="card-title" style="--accent:#e74c3c">中国 CO₂ 排放趋势（百万吨）</span>
-      <span class="source-tag">世界银行 EN.ATM.CO2E.KT</span>
+      <span class="card-title" style="--accent:#1abc9c">松花江两岸 5 km 土地利用变化（km²）</span>
+      <span class="source-tag">Landsat 监督分类，三期对比</span>
     </div>
-    <div id="co2Chart" class="chart skeleton"></div>
+    <div id="landUseChart" class="chart skeleton"></div>
+  </div>
+
+</div>
+
+<div class="section-label">驱动因素分析</div>
+<div class="main-grid">
+
+  <!-- 图表 5：降水 -->
+  <div class="chart-card wide" style="--accent:#1abc9c">
+    <div class="card-header">
+      <span class="card-title" style="--accent:#1abc9c">松花江流域年均降水量（mm）</span>
+      <span class="source-tag">CHIRPS v2.0 流域面均降水，1990–2022</span>
+    </div>
+    <div id="precipChart" class="chart skeleton"></div>
   </div>
 
 </div>
 
 <!-- ========== FOOTER ========== -->
 <footer>
-  数据来源：<a href="https://data.worldbank.org/" target="_blank">World Bank Open Data</a>（免费开源） ·
-  图表库：<a href="https://echarts.apache.org/" target="_blank">Apache ECharts 5</a> ·
-  数据协议：<a href="https://datacatalog.worldbank.org/public-licenses#cc-by" target="_blank">CC BY 4.0</a>
+  遥感数据：<a href="https://earthexplorer.usgs.gov/" target="_blank">Landsat (USGS/NASA)</a> ·
+  <a href="https://modis.gsfc.nasa.gov/" target="_blank">MODIS MOD13Q1 (NASA)</a> ·
+  <a href="https://www.chc.ucsb.edu/data/chirps" target="_blank">CHIRPS v2.0 (UCSB)</a> ·
+  <a href="https://global-surface-water.appspot.com/" target="_blank">JRC Global Surface Water</a><br>
+  图表库：<a href="https://echarts.apache.org/" target="_blank">Apache ECharts 5</a>（Apache-2.0） ·
+  中文字体：<a href="http://wenq.org/wqy2/index.cgi?MicroHei" target="_blank">WenQuanYi Micro Hei</a>（SIL OFL）<br>
+  研究区域：松辽流域（松花江 + 辽河），面积约 124 万 km²，位于中国东北
 </footer>
 
 <script src="static/js/dashboard.js"></script>
