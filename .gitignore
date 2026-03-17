@@ -1,0 +1,22 @@
+# OS / editor artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Temp files
+*.new
+*.bak
+*.tmp
+*.log
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+
+# Build artifacts
+dist/
